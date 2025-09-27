@@ -1,0 +1,92 @@
+name: Test Dependencies
+
+# This workflow tests dependency updates to ensure they don't break the build
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test-dependencies:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: "mcp-memory-service/rootfs/app/package-lock.json"
+
+      - name: Install dependencies
+        run: |
+          cd mcp-memory-service/rootfs/app
+          if [ -f package.json ]; then
+            npm ci
+          else
+            # Install dependencies manually if no package.json exists
+            npm install express cors
+          fi
+
+      - name: Test Docker build
+        run: |
+          # Test the simple Docker build
+          docker build -t mcp-test -f simple-test.Dockerfile .
+
+      - name: Test container startup
+        run: |
+          # Start container in background
+          docker run -d --name mcp-test-container -p 8080:8080 mcp-test
+
+          # Wait for container to start
+          sleep 10
+
+          # Test health endpoint
+          curl -f http://localhost:8080/health || exit 1
+
+          # Clean up
+          docker stop mcp-test-container
+          docker rm mcp-test-container
+
+      - name: Test API endpoints
+        run: |
+          # Start container in background
+          docker run -d --name mcp-test-container -p 8080:8080 mcp-test
+
+          # Wait for container to start
+          sleep 10
+
+          # Test API endpoints
+          curl -f http://localhost:8080/health
+          curl -f http://localhost:8080/info
+
+          # Test memory storage
+          MEMORY_ID=$(curl -s -X POST http://localhost:8080/memory/store \
+            -H "Content-Type: application/json" \
+            -d '{"content": "Test memory", "tags": ["test"]}' | jq -r '.memory_id')
+
+          # Test memory retrieval
+          curl -f "http://localhost:8080/memory/search?query=test"
+
+          # Clean up
+          docker stop mcp-test-container
+          docker rm mcp-test-container
+
+      - name: Security audit
+        run: |
+          cd mcp-memory-service/rootfs/app
+          if [ -f package.json ]; then
+            npm audit --audit-level=moderate
+          fi
+
+      - name: Check for vulnerabilities
+        uses: actions/dependency-review-action@v4
+        if: github.event_name == 'pull_request'

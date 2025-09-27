@@ -1,0 +1,110 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible.
+
+  - type: dropdown
+    id: addon-version
+    attributes:
+      label: Add-on Version
+      description: What version of the MCP Memory Service add-on are you using?
+      options:
+        - "1.0.0"
+        - "Development/Edge"
+        - "Other (please specify)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: home-assistant-version
+    attributes:
+      label: Home Assistant Version
+      description: What version of Home Assistant are you running?
+      options:
+        - "2024.1.x"
+        - "2023.12.x"
+        - "2023.11.x"
+        - "Older version"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe the bug...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: A clear and concise description of what actually happened.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Add-on Logs
+      description: Please include relevant log entries from the add-on.
+      render: shell
+      placeholder: |
+        [s6-init] making user provided files available at /var/run/s6/etc...
+        [s6-init] ensuring user provided files have correct perms...
+        [fix-attrs.d] applying ownership & permissions fixes...
+        [cont-init.d] executing container initialization scripts...
+        [cont-init.d] done.
+        [services.d] starting services
+        [services.d] done.
+        [INFO] MCP Memory Service HTTP API running on port 8080
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Configuration
+      description: Your add-on configuration (remove any sensitive information like API keys).
+      render: yaml
+      placeholder: |
+        log_level: info
+        storage_path: "/data"
+        cors_enabled: true
+        api_key: ""
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our Code of Conduct
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

@@ -1,0 +1,110 @@
+# Dependabot configuration for MCP Memory Service Add-on
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Monitor Node.js dependencies in the HTTP wrapper
+  - package-ecosystem: "npm"
+    directory: "/mcp-memory-service/rootfs/app"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "swingerman"
+    assignees:
+      - "swingerman"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "javascript"
+    ignore:
+      # Ignore major version updates for now (can be enabled later)
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    # Allow specific major version updates for critical security fixes
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+
+  # Monitor Docker dependencies in Dockerfile
+  - package-ecosystem: "docker"
+    directory: "/mcp-memory-service"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "swingerman"
+    assignees:
+      - "swingerman"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "security"
+    # Focus on security updates for Docker images
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    allow:
+      - dependency-type: "direct"
+
+  # Monitor GitHub Actions dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "swingerman"
+    assignees:
+      - "swingerman"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "ci"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # Monitor Docker Compose if we add it later
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "thursday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "swingerman"
+    assignees:
+      - "swingerman"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "docker-compose"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]

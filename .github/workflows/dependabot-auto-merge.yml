@@ -1,0 +1,35 @@
+name: Dependabot Auto-merge
+
+# This workflow automatically merges Dependabot PRs that pass all checks
+# Only runs on Dependabot PRs with specific labels
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    # Only run on Dependabot PRs with the "auto-merge" label
+    if: github.actor == 'dependabot[bot]' && contains(github.event.pull_request.labels.*.name, 'auto-merge')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Auto-merge Dependabot PR
+        uses: fastify/github-action-merge-dependabot@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Only auto-merge if all checks pass
+          merge-method: "squash"
+          # Add conventional commit prefix
+          commit-message-prefix: "chore(deps):"
+          # Only merge PRs with these labels
+          target: "production"
