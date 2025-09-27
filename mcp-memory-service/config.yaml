@@ -25,11 +25,21 @@ options:
   cors_enabled: true
   api_key: ""
   message: "Hello world..."
+  oauth_enabled: false
+  oauth_secret_key: ""
+  oauth_access_token_expire_minutes: 60
+  oauth_authorization_code_expire_minutes: 10
+  https_enabled: false
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)
   storage_path: str
   cors_enabled: bool
   api_key: str?
   message: str?
+  oauth_enabled: bool
+  oauth_secret_key: str?
+  oauth_access_token_expire_minutes: int(1,1440)
+  oauth_authorization_code_expire_minutes: int(1,60)
+  https_enabled: bool
 # Comment out during development - uncomment for production
 # image: "ghcr.io/swingerman/{arch}-addon-mcp-memory-service"

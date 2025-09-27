@@ -12,6 +12,11 @@ declare log_level
 declare storage_path
 declare cors_enabled
 declare api_key
+declare oauth_enabled
+declare oauth_secret_key
+declare oauth_access_token_expire_minutes
+declare oauth_authorization_code_expire_minutes
+declare https_enabled
 
 ## Get configuration values
 log_level=$(bashio::config 'log_level')
@@ -19,11 +24,17 @@ storage_path=$(bashio::config 'storage_path')
 cors_enabled=$(bashio::config 'cors_enabled')
 api_key=$(bashio::config 'api_key')
 message=$(bashio::config 'message')
+oauth_enabled=$(bashio::config 'oauth_enabled')
+oauth_secret_key=$(bashio::config 'oauth_secret_key')
+oauth_access_token_expire_minutes=$(bashio::config 'oauth_access_token_expire_minutes')
+oauth_authorization_code_expire_minutes=$(bashio::config 'oauth_authorization_code_expire_minutes')
+https_enabled=$(bashio::config 'https_enabled')
 
 bashio::log.info "Starting MCP Memory Service..."
 bashio::log.info "Log level: ${log_level}"
 bashio::log.info "Storage path: ${storage_path}"
 bashio::log.info "CORS enabled: ${cors_enabled}"
+bashio::log.info "OAuth enabled: ${oauth_enabled}"
 
 ## Print the message the user supplied, defaults to "Hello World..."
 bashio::log.info "${message:="Hello World..."}"
@@ -35,6 +46,18 @@ export DATA_DIR=${storage_path}
 export LOG_LEVEL=${log_level}
 export CORS_ENABLED=${cors_enabled}
 
+# OAuth 2.1 environment variables
+export OAUTH_ENABLED=${oauth_enabled}
+export MCP_OAUTH_ENABLED=${oauth_enabled}
+export OAUTH_SECRET_KEY=${oauth_secret_key}
+export MCP_OAUTH_SECRET_KEY=${oauth_secret_key}
+export OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES=${oauth_access_token_expire_minutes}
+export MCP_OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES=${oauth_access_token_expire_minutes}
+export OAUTH_AUTHORIZATION_CODE_EXPIRE_MINUTES=${oauth_authorization_code_expire_minutes}
+export MCP_OAUTH_AUTHORIZATION_CODE_EXPIRE_MINUTES=${oauth_authorization_code_expire_minutes}
+export HTTPS_ENABLED=${https_enabled}
+export MCP_HTTPS_ENABLED=${https_enabled}
+
 # Ensure data directory exists
 mkdir -p ${storage_path}
 
@@ -44,13 +67,25 @@ if bashio::var.has_value "${api_key}"; then
     export AUTH_ENABLED=true
     export API_KEY=${api_key}
 else
-    bashio::log.warning "No API key set - authentication disabled"
+    bashio::log.warning "No API key set - API key authentication disabled"
     export AUTH_ENABLED=false
+fi
+
+# Log OAuth configuration
+if bashio::var.true "${oauth_enabled}"; then
+    bashio::log.info "OAuth 2.1 authentication enabled"
+    if bashio::var.has_value "${oauth_secret_key}"; then
+        bashio::log.info "OAuth secret key provided"
+    else
+        bashio::log.warning "No OAuth secret key set - will auto-generate"
+    fi
+else
+    bashio::log.info "OAuth 2.1 authentication disabled"
 fi
 
 # Change to app directory
 cd /app
 
-## Run the MCP Memory Service HTTP wrapper
-bashio::log.info "Starting HTTP API wrapper..."
-exec node /app/http-wrapper.js
+## Run the MCP Memory Service HTTP wrapper with OAuth support
+bashio::log.info "Starting HTTP API wrapper with OAuth support..."
+exec node /app/http-wrapper-oauth.js

@@ -94,14 +94,10 @@ Access your memory service from anywhere:
    cd ha-mcp-memory-addon
    ```
 
-2. Build locally:
+2. Build and test locally (requires Home Assistant build environment):
    ```bash
-   docker build -t mcp-memory-service ./mcp-memory-service
-   ```
-
-3. Test the container:
-   ```bash
-   docker run -p 8080:8080 -e LOG_LEVEL=debug mcp-memory-service
+   # Note: This requires the Home Assistant add-on build system
+   # For local testing, install the add-on in Home Assistant
    ```
 
 ### Contributing

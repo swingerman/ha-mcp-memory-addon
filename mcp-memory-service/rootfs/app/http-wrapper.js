@@ -17,7 +17,12 @@ if (process.env.CORS_ENABLED === 'true') {
     }));
 }
 
-// Simple API key authentication middleware
+/**
+ * Simple API key authentication middleware
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next function
+ */
 const authenticate = (req, res, next) => {
     if (process.env.AUTH_ENABLED === 'true') {
         const apiKey = req.headers['x-api-key'] || req.headers['authorization']?.replace('Bearer ', '');
@@ -32,7 +37,10 @@ const authenticate = (req, res, next) => {
 let memories = [];
 const memoryFile = path.join(process.env.DATA_DIR || '/data', 'memories.json');
 
-// Load existing memories
+/**
+ * Load existing memories from JSON file
+ * @returns {Promise<void>}
+ */
 async function loadMemories() {
     try {
         const data = await fs.readFile(memoryFile, 'utf8');
@@ -44,7 +52,10 @@ async function loadMemories() {
     }
 }
 
-// Save memories to file
+/**
+ * Save memories to JSON file
+ * @returns {Promise<void>}
+ */
 async function saveMemories() {
     try {
         await fs.writeFile(memoryFile, JSON.stringify(memories, null, 2));
@@ -53,12 +64,18 @@ async function saveMemories() {
     }
 }
 
-// Health check endpoint
+/**
+ * Health check endpoint
+ * Returns service status information
+ */
 app.get('/health', (req, res) => {
     res.json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
-// Get service info
+/**
+ * Get service information endpoint
+ * Returns detailed service information
+ */
 app.get('/info', authenticate, (req, res) => {
     res.json({
         service: 'MCP Memory Service',
@@ -68,7 +85,10 @@ app.get('/info', authenticate, (req, res) => {
     });
 });
 
-// Store a memory
+/**
+ * Store a memory endpoint
+ * Creates a new memory with content, metadata, and tags
+ */
 app.post('/memory/store', authenticate, async (req, res) => {
     try {
         const { content, metadata = {}, tags = [] } = req.body;
@@ -97,7 +117,10 @@ app.post('/memory/store', authenticate, async (req, res) => {
     }
 });
 
-// Search memories
+/**
+ * Search memories endpoint
+ * Searches for memories based on query and tags
+ */
 app.get('/memory/search', authenticate, (req, res) => {
     try {
         const { query, tags, limit = 10 } = req.query;
@@ -132,7 +155,10 @@ app.get('/memory/search', authenticate, (req, res) => {
     }
 });
 
-// Get all memories
+/**
+ * List memories endpoint
+ * Returns paginated list of all memories
+ */
 app.get('/memory/list', authenticate, (req, res) => {
     try {
         const { limit = 50, offset = 0 } = req.query;
@@ -157,7 +183,10 @@ app.get('/memory/list', authenticate, (req, res) => {
     }
 });
 
-// Delete a memory
+/**
+ * Delete memory endpoint
+ * Deletes a memory by its ID
+ */
 app.delete('/memory/:id', authenticate, async (req, res) => {
     try {
         const { id } = req.params;
@@ -181,6 +210,10 @@ app.delete('/memory/:id', authenticate, async (req, res) => {
 // Start server
 const PORT = process.env.PORT || 8080;
 
+/**
+ * Start the HTTP server and load existing memories
+ * @returns {Promise<void>}
+ */
 async function startServer() {
     await loadMemories();
     
