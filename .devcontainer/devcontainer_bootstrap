@@ -1,0 +1,177 @@
+#!/bin/bash
+set -e
+
+# MCP Memory Service Add-on Development Environment Bootstrap
+echo "🚀 Initializing MCP Memory Service development environment..."
+
+# Ensure we're in the correct directory
+cd "${WORKSPACE_DIRECTORY:-/workspace}"
+
+# Install Node.js dependencies for the HTTP wrapper
+echo "📦 Installing Node.js dependencies..."
+cd mcp-memory-service/rootfs/app
+if [ -f package.json ]; then
+    npm install
+else
+    echo "⚠️  No package.json found, installing dependencies manually..."
+    npm install express cors
+fi
+cd ../../..
+
+# Create necessary directories
+echo "📁 Creating development directories..."
+mkdir -p /data
+mkdir -p /mnt/supervisor/addons/local/mcp-memory-service
+
+# Set up development environment variables
+echo "🔧 Setting up development environment..."
+export PORT=8080
+export DATA_DIR=/data
+export CORS_ENABLED=true
+export AUTH_ENABLED=false
+export LOG_LEVEL=debug
+
+# Create a development configuration
+echo "⚙️  Creating development configuration..."
+cat > /data/dev-config.yaml << EOF
+log_level: debug
+storage_path: "/data"
+cors_enabled: true
+api_key: ""
+message: "MCP Memory Service Development Environment"
+EOF
+
+# Install additional development tools
+echo "🛠️  Installing development tools..."
+apt-get update -qq
+apt-get install -y -qq curl jq tree
+
+# Create helpful aliases
+echo "🔗 Setting up development aliases..."
+cat >> ~/.bashrc << 'EOF'
+
+# MCP Memory Service Development Aliases
+alias mcp-test='docker build -t mcp-test -f simple-test.Dockerfile . && docker run -p 8080:8080 mcp-test'
+alias mcp-logs='docker logs -f \$(docker ps -q --filter ancestor=mcp-test)'
+alias mcp-stop='docker stop \$(docker ps -q --filter ancestor=mcp-test) && docker rm \$(docker ps -aq --filter ancestor=mcp-test)'
+alias mcp-health='curl -s http://localhost:8080/health | jq'
+alias mcp-info='curl -s http://localhost:8080/info | jq'
+alias mcp-list='curl -s http://localhost:8080/memory/list | jq'
+alias mcp-store='curl -X POST http://localhost:8080/memory/store -H "Content-Type: application/json" -d'
+alias mcp-search='curl -s "http://localhost:8080/memory/search?query=" | jq'
+
+# Git aliases for conventional commits
+alias gc-feat='git commit -m "feat: "'
+alias gc-fix='git commit -m "fix: "'
+alias gc-docs='git commit -m "docs: "'
+alias gc-chore='git commit -m "chore: "'
+
+echo "🎯 MCP Memory Service development environment ready!"
+echo "📖 Available commands:"
+echo "  mcp-test     - Build and run test container"
+echo "  mcp-logs     - View container logs"
+echo "  mcp-stop     - Stop test container"
+echo "  mcp-health   - Check service health"
+echo "  mcp-info     - Get service info"
+echo "  mcp-list     - List all memories"
+echo "  mcp-store    - Store a memory (add JSON data)"
+echo "  mcp-search   - Search memories (add query)"
+echo "  gc-feat      - Git commit with feat: prefix"
+echo "  gc-fix       - Git commit with fix: prefix"
+echo "  gc-docs      - Git commit with docs: prefix"
+echo "  gc-chore     - Git commit with chore: prefix"
+EOF
+
+# Create a quick start script
+echo "📝 Creating quick start script..."
+cat > start-dev.sh << 'EOF'
+#!/bin/bash
+echo "🚀 Starting MCP Memory Service development environment..."
+
+# Start Home Assistant Supervisor if not running
+if ! pgrep -f "supervisor" > /dev/null; then
+    echo "🏠 Starting Home Assistant Supervisor..."
+    supervisor_run &
+    sleep 10
+fi
+
+# Build and start the MCP Memory Service
+echo "🔨 Building MCP Memory Service..."
+docker build -t mcp-memory-dev -f simple-test.Dockerfile .
+
+echo "🚀 Starting MCP Memory Service..."
+docker run -d --name mcp-memory-dev \
+  -p 8080:8080 \
+  -e LOG_LEVEL=debug \
+  -e DATA_DIR=/data \
+  -e CORS_ENABLED=true \
+  -e AUTH_ENABLED=false \
+  -v $(pwd)/data:/data \
+  mcp-memory-dev
+
+echo "✅ Development environment started!"
+echo "🌐 Home Assistant: http://localhost:7123"
+echo "🧠 MCP Memory Service: http://localhost:8080"
+echo "📊 Use 'mcp-health' to check service status"
+EOF
+
+chmod +x start-dev.sh
+
+# Create a test script
+echo "🧪 Creating test script..."
+cat > test-api.sh << 'EOF'
+#!/bin/bash
+echo "🧪 Testing MCP Memory Service API..."
+
+# Wait for service to be ready
+echo "⏳ Waiting for service to start..."
+until curl -s http://localhost:8080/health > /dev/null; do
+    sleep 1
+done
+
+echo "✅ Service is ready!"
+
+# Test health endpoint
+echo "🔍 Testing health endpoint..."
+curl -s http://localhost:8080/health | jq
+
+# Test info endpoint
+echo "📊 Testing info endpoint..."
+curl -s http://localhost:8080/info | jq
+
+# Store a test memory
+echo "💾 Storing test memory..."
+MEMORY_ID=$(curl -s -X POST http://localhost:8080/memory/store \
+  -H "Content-Type: application/json" \
+  -d '{"content": "Development test memory", "tags": ["test", "dev"]}' | jq -r '.memory_id')
+
+echo "✅ Memory stored with ID: $MEMORY_ID"
+
+# Search for the memory
+echo "🔍 Searching for test memory..."
+curl -s "http://localhost:8080/memory/search?query=test" | jq
+
+# List all memories
+echo "📋 Listing all memories..."
+curl -s http://localhost:8080/memory/list | jq
+
+echo "🎉 API tests completed successfully!"
+EOF
+
+chmod +x test-api.sh
+
+echo "🎉 MCP Memory Service development environment initialized!"
+echo ""
+echo "📖 Quick Start:"
+echo "  1. Run './start-dev.sh' to start the development environment"
+echo "  2. Run './test-api.sh' to test the API"
+echo "  3. Use the aliases (mcp-*) for quick commands"
+echo ""
+echo "🌐 Access URLs:"
+echo "  - Home Assistant: http://localhost:7123"
+echo "  - MCP Memory Service: http://localhost:8080"
+echo ""
+echo "📚 Development Resources:"
+echo "  - API Documentation: docs/api.md"
+echo "  - Installation Guide: docs/installation.md"
+echo "  - Cursor Agent Guide: CURSOR_AGENT_GUIDE.md"
