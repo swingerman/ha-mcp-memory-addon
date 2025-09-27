@@ -1,0 +1,43 @@
+{
+  "name": "ha-mcp-memory-addon",
+  "version": "1.0.0",
+  "description": "Home Assistant add-on for MCP Memory Service with OAuth 2.1 support",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test-api.js",
+    "test:local": "node test-api.js http://localhost:8080",
+    "test:ha": "node test-api.js http://homeassistant:8080",
+    "test:oauth": "./test-oauth.sh",
+    "test:integration": "node test-integration.js",
+    "test:integration:ha": "node test-integration.js http://homeassistant:8080",
+    "test:server": "node test-server.js",
+    "start": "node mcp-memory-service/rootfs/app/http-wrapper-oauth.js"
+  },
+  "keywords": [
+    "home-assistant",
+    "addon",
+    "mcp",
+    "memory-service",
+    "oauth",
+    "ai",
+    "claude"
+  ],
+  "author": "swingerman",
+  "license": "MIT",
+  "devDependencies": {
+    "axios": "^1.6.0",
+    "express": "^4.18.0",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/swingerman/ha-mcp-memory-addon.git"
+  },
+  "bugs": {
+    "url": "https://github.com/swingerman/ha-mcp-memory-addon/issues"
+  },
+  "homepage": "https://github.com/swingerman/ha-mcp-memory-addon#readme"
+}

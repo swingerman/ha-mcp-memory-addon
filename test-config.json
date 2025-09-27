@@ -1,0 +1,63 @@
+{
+  "environments": {
+    "local": {
+      "baseUrl": "http://localhost:8080",
+      "description": "Local development environment",
+      "oauth": {
+        "enabled": true,
+        "clientName": "Local Test Client"
+      },
+      "auth": {
+        "apiKey": null,
+        "oauthOnly": false
+      }
+    },
+    "homeassistant": {
+      "baseUrl": "http://homeassistant:8080",
+      "description": "Home Assistant add-on environment",
+      "oauth": {
+        "enabled": true,
+        "clientName": "HA Test Client"
+      },
+      "auth": {
+        "apiKey": null,
+        "oauthOnly": false
+      }
+    },
+    "production": {
+      "baseUrl": "https://your-domain.com:8080",
+      "description": "Production environment",
+      "oauth": {
+        "enabled": true,
+        "clientName": "Production Test Client"
+      },
+      "auth": {
+        "apiKey": null,
+        "oauthOnly": true
+      }
+    }
+  },
+  "testSuites": {
+    "smoke": {
+      "description": "Basic smoke tests",
+      "tests": ["health", "info", "oauth_discovery"]
+    },
+    "oauth": {
+      "description": "OAuth 2.1 flow tests",
+      "tests": ["oauth_discovery", "oauth_registration", "oauth_authorization", "oauth_token", "oauth_memory_ops"]
+    },
+    "memory": {
+      "description": "Memory operations tests",
+      "tests": ["memory_store", "memory_search", "memory_list", "memory_delete"]
+    },
+    "full": {
+      "description": "Complete test suite",
+      "tests": ["health", "info", "oauth_discovery", "oauth_registration", "oauth_authorization", "oauth_token", "oauth_memory_ops", "memory_store", "memory_search", "memory_list", "memory_delete"]
+    }
+  },
+  "defaults": {
+    "timeout": 30000,
+    "retries": 3,
+    "cleanup": true
+  }
+}
