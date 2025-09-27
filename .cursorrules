@@ -1,0 +1,273 @@
+# Cursor Agent Instructions for MCP Memory Service Add-on
+
+## Project Overview
+This is a Home Assistant add-on that provides an AI memory service using the Model Context Protocol (MCP). It allows AI agents to store and retrieve persistent memories through a simple HTTP API.
+
+## Project Structure
+```
+ha-mcp-memory-addon/
+├── mcp-memory-service/          # Main add-on directory (moved from addon/)
+│   ├── config.yaml             # Add-on configuration
+│   ├── Dockerfile              # Container build instructions
+│   ├── apparmor.txt            # Security profile
+│   ├── rootfs/                 # Runtime files
+│   │   ├── app/
+│   │   │   └── http-wrapper.js # Main HTTP API server
+│   │   └── etc/services.d/mcp-memory/
+│   │       ├── run             # Service startup script
+│   │       └── finish          # Service shutdown script
+│   └── README.md, DOCS.md, CHANGELOG.md
+├── docs/                       # Documentation
+│   ├── api.md                  # API reference
+│   └── installation.md         # Installation guide
+├── README.md                   # Main project README
+├── LICENSE                     # MIT License
+└── repository.json             # HA repository metadata
+```
+
+## Key Components
+
+### 1. HTTP Wrapper (`mcp-memory-service/rootfs/app/http-wrapper.js`)
+- **Purpose**: Express.js server providing RESTful API for memory operations
+- **Key Features**:
+  - Memory storage/retrieval with JSON persistence
+  - Search functionality with content and tag filtering
+  - Optional API key authentication
+  - CORS support for web applications
+  - Health monitoring endpoints
+
+### 2. Add-on Configuration (`mcp-memory-service/config.yaml`)
+- **Purpose**: Home Assistant add-on metadata and configuration schema
+- **Key Settings**:
+  - Port 8080 for HTTP API
+  - Configurable storage path, CORS, authentication
+  - Multi-architecture support (ARM, x64, etc.)
+
+### 3. Dockerfile (`mcp-memory-service/Dockerfile`)
+- **Purpose**: Container build instructions for Home Assistant
+- **Note**: Uses `ARG BUILD_FROM` for HA's build system
+- **Dependencies**: Node.js, npm, git, express, cors
+
+## Development Guidelines
+
+### When Making Changes:
+
+1. **File References**: Always update paths when moving files
+   - The `mcp-memory-service/` folder was moved from `addon/` to root
+   - Update any references to `addon/mcp-memory-service` → `mcp-memory-service`
+
+2. **API Endpoints**: Maintain consistency with existing patterns
+   - All endpoints use `/memory/` prefix
+   - Authentication via `X-API-Key` or `Authorization: Bearer`
+   - JSON request/response format
+
+3. **Configuration**: Follow HA add-on standards
+   - Use `config.yaml` schema validation
+   - Support all architectures listed
+   - Maintain backward compatibility
+
+4. **Documentation**: Update relevant docs when making changes
+   - `README.md` for major features
+   - `docs/api.md` for API changes
+   - `mcp-memory-service/README.md` for add-on specific info
+
+### Testing Approaches:
+
+1. **Devcontainer Development (Recommended)**:
+   ```bash
+   # Open in VS Code with Dev Containers extension
+   # Automatically sets up full Home Assistant development environment
+   # Includes Node.js, Docker, and all development tools
+   ```
+
+2. **Local Docker Testing**:
+   ```bash
+   # Use simple-test.Dockerfile for local development
+   docker build -t test -f simple-test.Dockerfile .
+   docker run -p 8080:8080 test
+   ```
+
+3. **Home Assistant Testing**:
+   - Install via add-on store or manual copy
+   - Test API endpoints with curl commands
+   - Verify persistence across restarts
+
+### Common Tasks:
+
+#### Adding New API Endpoints:
+1. Add route to `http-wrapper.js`
+2. Include authentication middleware if needed
+3. Update `docs/api.md` with documentation
+4. Add tests/examples
+
+#### Modifying Configuration:
+1. Update `config.yaml` schema
+2. Add environment variable handling in `http-wrapper.js`
+3. Update documentation in `DOCS.md`
+
+#### Improving Security:
+1. Review `apparmor.txt` for container permissions
+2. Enhance authentication in `http-wrapper.js`
+3. Add input validation for API endpoints
+
+## Code Patterns
+
+### Environment Variables:
+```javascript
+// Standard pattern for HA add-on environment variables
+const PORT = process.env.PORT || 8080;
+const DATA_DIR = process.env.STORAGE_PATH || '/data';
+const CORS_ENABLED = process.env.CORS_ENABLED === 'true';
+const AUTH_ENABLED = process.env.API_KEY ? 'true' : 'false';
+```
+
+### API Response Format:
+```javascript
+// Success response
+res.json({ success: true, memory_id: memory.id });
+
+// Error response
+res.status(400).json({ error: 'Content is required' });
+```
+
+### Memory Object Structure:
+```javascript
+const memory = {
+    id: Date.now().toString(),
+    content: string,
+    metadata: object,
+    tags: array,
+    created_at: ISO_string,
+    updated_at: ISO_string
+};
+```
+
+## Important Notes for Agents:
+
+1. **Home Assistant Context**: This is designed for HA's add-on system
+   - Uses HA's build system with `ARG BUILD_FROM`
+   - Follows HA's configuration schema standards
+   - Integrates with HA's logging and storage systems
+
+2. **MCP Protocol**: Based on Model Context Protocol
+   - Original service: https://github.com/doobidoo/mcp-memory-service
+   - Provides persistent memory for AI agents
+   - Simple HTTP API for easy integration
+
+3. **Security Considerations**:
+   - Optional API key authentication
+   - AppArmor profile for container security
+   - Input validation on all endpoints
+   - CORS configuration for web access
+
+4. **Testing Requirements**:
+   - Test all API endpoints with curl
+   - Verify persistence across container restarts
+   - Test authentication when enabled
+   - Validate CORS behavior
+
+## When Contributing:
+
+1. **Fork and Branch**: Create feature branches for changes
+2. **Update Documentation**: Keep docs in sync with code changes
+3. **Test Thoroughly**: Use both local Docker and HA testing
+4. **Follow Patterns**: Maintain consistency with existing code style
+5. **Consider Compatibility**: Ensure changes work across all architectures
+
+### Commit Message Style:
+
+**Use Conventional Commits** for all commit messages following this format:
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `style`: Code style changes (formatting, etc.)
+- `refactor`: Code refactoring
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks, dependencies
+- `perf`: Performance improvements
+- `ci`: CI/CD changes
+- `build`: Build system changes
+
+**Examples:**
+```bash
+git commit -m "feat(api): add memory statistics endpoint"
+git commit -m "fix(auth): resolve API key validation issue"
+git commit -m "docs: update installation guide for new architecture"
+git commit -m "refactor(storage): improve memory persistence logic"
+git commit -m "chore: update dependencies to latest versions"
+```
+
+## Dependabot Configuration:
+
+This project uses **Dependabot** for automated dependency management:
+
+- **Weekly updates** for Node.js, Docker, and GitHub Actions dependencies
+- **Automatic security updates** with proper testing
+- **Conventional commit messages** for all dependency updates
+- **Auto-merge** for minor/patch updates that pass tests
+- **Security auditing** on all dependency changes
+
+**Files:**
+- `.github/dependabot.yml` - Dependabot configuration
+- `.github/workflows/test-dependencies.yml` - Dependency testing
+- `.github/workflows/dependabot-auto-merge.yml` - Auto-merge workflow
+- `SECURITY.md` - Security policy and vulnerability reporting
+
+## Resources:
+
+- [Home Assistant Add-on Development](https://developers.home-assistant.io/docs/add-ons/)
+- [Model Context Protocol](https://modelcontextprotocol.io/)
+- [Original MCP Memory Service](https://github.com/doobidoo/mcp-memory-service)
+- [Express.js Documentation](https://expressjs.com/)
+- [Dependabot Documentation](https://docs.github.com/en/code-security/dependabot)
+
+## Development Environment:
+
+### Devcontainer Setup (Recommended):
+- **VS Code**: Install "Dev Containers" extension
+- **Open Project**: VS Code will prompt to reopen in container
+- **Automatic Setup**: Full Home Assistant development environment
+- **Access URLs**: 
+  - Home Assistant: http://localhost:7123
+  - MCP Memory Service: http://localhost:8080
+
+### Development Commands (in devcontainer):
+```bash
+# Quick start development environment
+./start-dev.sh
+
+# Test API endpoints
+./test-api.sh
+
+# Useful aliases (auto-configured)
+mcp-test      # Build and run test container
+mcp-health    # Check service health
+mcp-store     # Store a memory (add JSON data)
+mcp-search    # Search memories (add query)
+gc-feat       # Git commit with feat: prefix
+gc-fix        # Git commit with fix: prefix
+```
+
+## Common Commands:
+
+```bash
+# Build and test locally
+docker build -t test -f simple-test.Dockerfile .
+docker run -p 8080:8080 test
+
+# Test API endpoints
+curl http://localhost:8080/health
+curl -X POST http://localhost:8080/memory/store -H "Content-Type: application/json" -d '{"content":"test"}'
+
+# Install in Home Assistant
+cp -r mcp-memory-service /addons/
+```
