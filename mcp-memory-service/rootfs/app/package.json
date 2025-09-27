@@ -1,0 +1,38 @@
+{
+  "name": "mcp-memory-service-http-wrapper",
+  "version": "1.0.0",
+  "description": "HTTP wrapper for MCP Memory Service in Home Assistant add-on",
+  "main": "http-wrapper.js",
+  "scripts": {
+    "start": "node http-wrapper.js",
+    "test": "echo \"No tests specified\" && exit 0",
+    "lint": "echo \"No linter configured\" && exit 0"
+  },
+  "keywords": [
+    "mcp",
+    "memory",
+    "service",
+    "home-assistant",
+    "add-on",
+    "http",
+    "api"
+  ],
+  "author": "swingerman",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/swingerman/ha-mcp-memory-addon.git",
+    "directory": "mcp-memory-service/rootfs/app"
+  },
+  "bugs": {
+    "url": "https://github.com/swingerman/ha-mcp-memory-addon/issues"
+  },
+  "homepage": "https://github.com/swingerman/ha-mcp-memory-addon#readme"
+}

@@ -1,0 +1,76 @@
+#include <tunables/global>
+
+profile mcp-memory-service flags=(attach_disconnected,mediate_deleted) {
+  #include <abstractions/base>
+
+  # Capabilities
+  file,
+  signal (send) set=(kill,term,int,hup,cont),
+
+  # S6-Overlay
+  /init ix,
+  /bin/** ix,
+  /usr/bin/** ix,
+  /run/{s6,s6-rc*,service}/** ix,
+  /package/** ix,
+  /command/** ix,
+  /etc/services.d/** rwix,
+  /etc/cont-init.d/** rwix,
+  /etc/cont-finish.d/** rwix,
+  /run/{,**} rwk,
+  /dev/tty rw,
+
+  # Bashio
+  /usr/lib/bashio/** ix,
+  /tmp/** rwk,
+
+  # Access to options.json and other files within your addon
+  /data/** rw,
+
+  # Node.js and application files
+  /app/** r,
+  /usr/bin/node ix,
+  
+  # Start new profile for Node.js service
+  /usr/bin/node cx -> nodejs,
+
+  profile nodejs flags=(attach_disconnected,mediate_deleted) {
+    #include <abstractions/base>
+
+    # Receive signals from S6-Overlay
+    signal (receive) peer=*_mcp-memory-service,
+
+    # Access to options.json and other files within your addon
+    /data/** rw,
+
+    # Access to mapped volumes specified in config.yaml
+    /share/** rw,
+
+    # Node.js and npm related paths
+    /usr/bin/node r,
+    /app/** r,
+    /usr/lib/node_modules/** r,
+    
+    # System libraries for Node.js
+    /lib/** r,
+    /usr/lib/** r,
+    /usr/share/ca-certificates/** r,
+    /etc/ssl/** r,
+    /etc/passwd r,
+    /etc/group r,
+    /etc/hosts r,
+    /etc/resolv.conf r,
+    /etc/nsswitch.conf r,
+    
+    # Process and networking
+    /dev/tty rw,
+    /proc/sys/net/** r,
+    /sys/kernel/mm/transparent_hugepage/hpage_pmd_size r,
+    
+    # Temporary files
+    /tmp/** rwk,
+    
+    # DNS resolution
+    /run/systemd/resolve/** r,
+  }
+}

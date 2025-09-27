@@ -1,0 +1,35 @@
+# https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
+name: "MCP Memory Service"
+description: "AI Memory Service using Model Context Protocol"
+version: "1.0.0"
+slug: "mcp-memory-service"
+url: "https://github.com/swingerman/ha-mcp-memory-addon/tree/main/mcp-memory-service"
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+init: false
+startup: services
+boot: auto
+ports:
+  "8080/tcp": 8080
+ports_description:
+  "8080/tcp": "MCP Memory Service HTTP API"
+map:
+  - "share:rw"
+options:
+  log_level: info
+  storage_path: "/data"
+  cors_enabled: true
+  api_key: ""
+  message: "Hello world..."
+schema:
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
+  storage_path: str
+  cors_enabled: bool
+  api_key: str?
+  message: str?
+# Comment out during development - uncomment for production
+# image: "ghcr.io/swingerman/{arch}-addon-mcp-memory-service"

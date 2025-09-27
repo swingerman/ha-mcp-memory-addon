@@ -1,0 +1,56 @@
+#!/usr/bin/with-contenv bashio
+# ==============================================================================
+# Start the MCP Memory Service
+# s6-overlay docs: https://github.com/just-containers/s6-overlay
+# ==============================================================================
+
+# Add your code here
+
+# Declare variables
+declare message
+declare log_level
+declare storage_path
+declare cors_enabled
+declare api_key
+
+## Get configuration values
+log_level=$(bashio::config 'log_level')
+storage_path=$(bashio::config 'storage_path')
+cors_enabled=$(bashio::config 'cors_enabled')
+api_key=$(bashio::config 'api_key')
+message=$(bashio::config 'message')
+
+bashio::log.info "Starting MCP Memory Service..."
+bashio::log.info "Log level: ${log_level}"
+bashio::log.info "Storage path: ${storage_path}"
+bashio::log.info "CORS enabled: ${cors_enabled}"
+
+## Print the message the user supplied, defaults to "Hello World..."
+bashio::log.info "${message:="Hello World..."}"
+
+# Set environment variables for the service
+export NODE_ENV=production
+export PORT=8080
+export DATA_DIR=${storage_path}
+export LOG_LEVEL=${log_level}
+export CORS_ENABLED=${cors_enabled}
+
+# Ensure data directory exists
+mkdir -p ${storage_path}
+
+# Check if API key is set
+if bashio::var.has_value "${api_key}"; then
+    bashio::log.info "API key authentication enabled"
+    export AUTH_ENABLED=true
+    export API_KEY=${api_key}
+else
+    bashio::log.warning "No API key set - authentication disabled"
+    export AUTH_ENABLED=false
+fi
+
+# Change to app directory
+cd /app
+
+## Run the MCP Memory Service HTTP wrapper
+bashio::log.info "Starting HTTP API wrapper..."
+exec node /app/http-wrapper.js
