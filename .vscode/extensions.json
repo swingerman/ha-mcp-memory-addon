@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "redhat.vscode-yaml",
+    "esphome.esphome-vscode",
+    "ms-azuretools.vscode-docker",
+    "humao.rest-client",
+    "eamodio.gitlens"
+  ]
+}
