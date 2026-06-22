@@ -6,8 +6,11 @@ updates:
   # Monitor Node.js dependencies in the HTTP wrapper
   - package-ecosystem: "npm"
     directory: "/mcp-memory-service/rootfs/app"
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "monday"
       time: "09:00"
       timezone: "UTC"
@@ -35,8 +38,11 @@ updates:
   # Monitor Docker dependencies in Dockerfile
   - package-ecosystem: "docker"
     directory: "/mcp-memory-service"
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "tuesday"
       time: "09:00"
       timezone: "UTC"
@@ -63,8 +69,11 @@ updates:
   # Monitor GitHub Actions dependencies
   - package-ecosystem: "github-actions"
     directory: "/"
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "wednesday"
       time: "09:00"
       timezone: "UTC"
@@ -88,8 +97,11 @@ updates:
   # Monitor Docker Compose if we add it later
   - package-ecosystem: "docker"
     directory: "/"
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "thursday"
       time: "09:00"
       timezone: "UTC"
